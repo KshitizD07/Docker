@@ -1,4 +1,4 @@
-# Introduction to Docker and Virtualization
+o# Introduction to Docker and Virtualization
 
 ## Why Docker?
 Docker solves several critical problems in software development and deployment:
@@ -68,4 +68,86 @@ graph TD
 1. **No Guest OS Boot Time**: Because a container does not have to boot its own operating system kernel, starting a container is as fast as starting a normal application process on your computer.
 2. **Direct Hardware Execution**: Hypervisors must translate instruction calls from the Guest OS to the Host OS, creating overhead. Containers execute instructions directly on the host kernel, yielding near-native performance.
 3. **Optimized Storage**: Containers share base image layers (using Copy-on-Write storage), meaning spinning up 10 containers of the same image takes barely any extra disk space, whereas 10 VMs would require 10 copies of the entire operating system.
+
+
+
+## Containers
+
+A **Container** is a lightweight, executable, and standalone package of software that includes everything needed to run an application: code, runtime, system tools, system libraries, and settings.
+
+Key characteristics:
+1. **Shared OS Kernel**: Unlike VMs, containers share the host machine's OS kernel, meaning they don't require a full OS per application, significantly reducing overhead.
+2. **Process Isolation**: Containers are completely isolated from one another and the host system, ensuring security and stability.
+3. **Speed**: They boot up in milliseconds since there is no OS to boot.
+4. **Portability**: They run consistently across any environment, eliminating the "it works on my machine" problem.
+5. **Scalability**: Because they are lightweight, you can easily spin up hundreds of containers across a cluster of machines.
+
+*Note: We use a `Dockerfile` to create an image, and running that image creates a container based on our requirements.*
+
+## What is the difference between an Image and a Container?
+
+- **Docker Image**: Think of an image as a **blueprint** or a class in object-oriented programming. It is a read-only, immutable template containing instructions for creating a Docker container. It packages the application code, runtime, libraries, and environment variables.
+- **Docker Container**: Think of a container as a **running instance** of that blueprint (or an object instantiated from a class). When you execute a `docker run` command on an image, it becomes a container. You can spin up multiple isolated containers from a single image simultaneously.
+
+DOCKER-
+A software program that lets us build images, run, manage and distributes them efficiently using containers.
+    -Docker client lets the users/dev to interact with the docker on cli or desktop app to run commands like: docker pull, docker run, docker build, etc.
+
+    -Docker host is the virtual machine or the server on which the docker engine is installed and running.
+
+
+
+DOCKER IMAGE-
+These are read only binary templates used to build containers. Any number of containers can be built using these images.
+    They contain the application code, libraries, dependencies required to run the code.
+
+DOCKER DAEMON-
+The heart of the docker. The actual component that listens to the APIs(from the docker client) and builds and manages the images, networks and volumes.
+It is more like a middleman between client and host. It also pull the images from the registries as per requirements by the client.
+
+
+### Docker Registry
+A **Docker Registry** is a centralized storage and distribution system for named Docker images. 
+- **Docker Hub** is the default public registry provided by Docker, offering access to thousands of official base images (like Ubuntu, Nginx, Node.js, Python).
+- You can also set up private registries (e.g., AWS ECR, Google Artifact Registry) to securely store and manage proprietary company images.
+
+
+HOW DOCKER WORKS-
+Docker CLI(client) communicates with Docker Daemon/server named 'Dockerd'.
+It processes the API request and utilized the containered functionality to manage the container's lifecycle, named 'containerd'.
+runC component is used to run the containers.
+
+### Diagram: How Docker Works
+
+```mermaid
+flowchart LR
+    subgraph Client [Docker Client]
+        CLI[Docker CLI / Desktop]
+    end
+
+    subgraph Host [Docker Host]
+        Daemon[Docker Daemon / Dockerd]
+        Containerd[containerd]
+        runC[runC]
+        
+        Daemon -->|gRPC APIs| Containerd
+        Containerd -->|spawns| runC
+        runC -->|creates| C1[Container 1]
+        runC -->|creates| C2[Container 2]
+    end
+
+    subgraph Registry [Docker Registry]
+        Hub[(Docker Hub)]
+    end
+
+    CLI -->|REST API Requests| Daemon
+    Daemon <-->|Pulls/Pushes Images| Hub
+```
+
+- **Client (CLI)**: The user interface where you type commands like `docker run` or `docker build`.
+- **Daemon (Dockerd)**: The core engine that receives API requests, manages images, volumes, and networks.
+- **containerd**: An industry-standard container runtime that manages the complete container lifecycle (pulling/pushing images, execution, stopping).
+- **runC**: A low-level, lightweight tool that directly interfaces with Linux kernel features (`cgroups`, `namespaces`) to actually spawn and run the isolated containers.
+
+
 
